@@ -8,13 +8,19 @@ app.use(express.json());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+if (!OPENAI_API_KEY) {
+    console.error("❌ Ошибка: Не задан OPENAI_API_KEY в переменных окружения!");
+    process.exit(1);
+}
+
 app.post("/ask", async (req, res) => {
     try {
-        const question = req.body.question;
-
+        const question = req.body.question?.trim();
         if (!question) {
-            return res.json({ answer: "Я не услышала вопрос. Попробуй ещё раз." });
+            return res.json({ answer: "Я не получил вопрос. Попробуй снова." });
         }
+
+        console.log("➡ Вопрос от ученика:", question);
 
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -27,27 +33,30 @@ app.post("/ask", async (req, res) => {
                 messages: [
                     {
                         role: "system",
-                        content: "Ты дружелюбный учитель математики 1 класса. Отвечай строго в формате: пример = ответ. Используй только математические записи, например: 2 + 5 = 7 или 5 - 3 = 2."
+                        content: "Ты дружелюбный учитель математики 1 класса. Отвечай коротко и понятно. Используй только математические записи: например 5 + 3 = 8."
                     },
                     { role: "user", content: question }
-                ]
+                ],
+                temperature: 0.3
             })
         });
 
         const data = await response.json();
+        console.log("⬅ Ответ от OpenAI:", JSON.stringify(data, null, 2));
 
-        // Безопасная проверка, чтобы избежать undefined
-        let answer = data?.choices?.[0]?.message?.content?.trim();
-        if (!answer) answer = "Я не смогла ответить. Попробуй ещё раз.";
+        const answer = data?.choices?.[0]?.message?.content?.trim()
+            || "Я не смогла ответить. Попробуй ещё раз.";
 
         res.json({ answer });
 
-    } catch (e) {
-        console.error(e);
+    } catch (err) {
+        console.error("❌ Ошибка сервера:", err);
         res.status(500).json({ answer: "Произошла ошибка на сервере. Попробуй позже." });
     }
 });
 
-app.listen(3000, () => {
-    console.log("AI teacher server running on port 3000");
+// Использовать порт Render или локально 3000
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`✅ AI teacher server running on port ${PORT}`);
 });
