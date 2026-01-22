@@ -12,6 +12,10 @@ app.post("/ask", async (req, res) => {
     try {
         const question = req.body.question;
 
+        if (!question) {
+            return res.json({ answer: "Я не услышала вопрос. Попробуй ещё раз." });
+        }
+
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -23,7 +27,7 @@ app.post("/ask", async (req, res) => {
                 messages: [
                     {
                         role: "system",
-                        content: "Ты дружелюбный учитель математики 1 класса. Отвечай коротко и понятно, используй только математические записи: 5 + 3 = 8."
+                        content: "Ты дружелюбный учитель математики 1 класса. Отвечай строго в формате: пример = ответ. Используй только математические записи, например: 2 + 5 = 7 или 5 - 3 = 2."
                     },
                     { role: "user", content: question }
                 ]
@@ -31,10 +35,16 @@ app.post("/ask", async (req, res) => {
         });
 
         const data = await response.json();
-        res.json({ answer: data.choices[0].message.content });
+
+        // Безопасная проверка, чтобы избежать undefined
+        let answer = data?.choices?.[0]?.message?.content?.trim();
+        if (!answer) answer = "Я не смогла ответить. Попробуй ещё раз.";
+
+        res.json({ answer });
 
     } catch (e) {
-        res.status(500).json({ error: "Ошибка сервера" });
+        console.error(e);
+        res.status(500).json({ answer: "Произошла ошибка на сервере. Попробуй позже." });
     }
 });
 
