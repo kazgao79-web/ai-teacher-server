@@ -46,7 +46,7 @@ function solveLocally(q) {
   const sub = q.match(/(\d+)\s*-\s*(\d+)/);
   if (sub) {
     const a = +sub[1], b = +sub[2];
-    return `${a} - ${b} = ${a - b}. Было ${a} яблок, убрали ${b}, осталось ${a - b}.`;
+    return `${a} минус ${b} = ${a - b}. Было ${a} яблок, убрали ${b}, осталось ${a - b}.`;
   }
 
   // Объяснения
@@ -137,3 +137,4 @@ app.post("/ask", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`✅ AI teacher server running on port ${PORT}`);
 });
+
