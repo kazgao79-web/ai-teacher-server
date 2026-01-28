@@ -2,7 +2,7 @@
 import fetch from "node-fetch";
 import cors from "cors";
 
-const app = express();
+const app = express(); 
 app.use(cors());
 app.use(express.json());
 
@@ -139,90 +139,7 @@ app.listen(PORT, () => {
 });
 ********/
 /********---------------------------NOVYI------------------------------------------******/
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
 
-const app = express();
-app.use(cors());
-app.use(express.json());
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-app.post("/ask", async (req, res) => {
-    try {
-        const question = req.body.question;
-
-        console.log("📩 Question:", question);
-
-        const response = await fetch(
-            "https://api.openai.com/v1/chat/completions",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [
-                        {
-                            role: "system",
-                            content: `
-Ты — дружелюбный и терпеливый учитель математики для 1 класса.
-
-ТЕМА УРОКА:
-«Сложение и вычитание чисел».
-
-ПРАВИЛА:
-- Отвечай свободно и естественно, как живой учитель.
-- Объясняй простыми словами, доступными ребёнку.
-- Используй примеры с предметами (яблоки, карандаши, игрушки).
-- Можно поддерживать ученика и говорить, что это не сложно.
-- Не используй сложные термины.
-- Не выходи за рамки математики начальной школы.
-- Если в вопросе несколько действий — объясняй их по порядку.
-
-ЦЕЛЬ:
-Помочь ребёнку ПОНЯТЬ, а не просто дать ответ.
-`
-                        },
-                        {
-                            role: "user",
-                            content: question
-                        }
-                    ],
-                    temperature: 0.8
-                })
-            }
-        );
-
-        const data = await response.json();
-
-        if (!data.choices || !data.choices[0]) {
-            console.error("❌ OpenAI empty response:", data);
-            return res.json({
-                answer: "Я не смогла ответить. Попробуй ещё раз."
-            });
-        }
-
-        const answer = data.choices[0].message.content;
-
-        console.log("🧠 GPT answer:", answer);
-
-        res.json({ answer });
-
-    } catch (error) {
-        console.error("🔥 Server error:", error);
-        res.status(500).json({
-            answer: "Произошла ошибка на сервере."
-        });
-    }
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log("✅ AI teacher server running on port", PORT);
-});
 
 
